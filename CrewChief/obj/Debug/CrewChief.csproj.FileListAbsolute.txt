@@ -1,0 +1,104 @@
+C:\Users\mprof\Documents\Visual Studio 2015\Projects\CrewChief\CrewChief\bin\Debug\CrewChief.exe.config
+C:\Users\mprof\Documents\Visual Studio 2015\Projects\CrewChief\CrewChief\bin\Debug\CrewChief.exe
+C:\Users\mprof\Documents\Visual Studio 2015\Projects\CrewChief\CrewChief\bin\Debug\CrewChief.pdb
+C:\Users\mprof\Documents\Visual Studio 2015\Projects\CrewChief\CrewChief\bin\Debug\iRacingSdkWrapper.dll
+C:\Users\mprof\Documents\Visual Studio 2015\Projects\CrewChief\CrewChief\bin\Debug\iRSDKSharp.dll
+C:\Users\mprof\Documents\Visual Studio 2015\Projects\CrewChief\CrewChief\bin\Debug\YamlDotNet.dll
+C:\Users\mprof\Documents\Visual Studio 2015\Projects\CrewChief\CrewChief\bin\Debug\iRacingSdkWrapper.pdb
+C:\Users\mprof\Documents\Visual Studio 2015\Projects\CrewChief\CrewChief\bin\Debug\iRSDKSharp.pdb
+C:\Users\mprof\Documents\Visual Studio 2015\Projects\CrewChief\CrewChief\bin\Debug\YamlDotNet.pdb
+C:\Users\mprof\Documents\Visual Studio 2015\Projects\CrewChief\CrewChief\bin\Debug\YamlDotNet.xml
+C:\Users\mprof\Documents\Visual Studio 2015\Projects\CrewChief\CrewChief\obj\Debug\CrewChief.csprojResolveAssemblyReference.cache
+C:\Users\mprof\Documents\Visual Studio 2015\Projects\CrewChief\CrewChief\obj\Debug\MainWindow.g.cs
+C:\Users\mprof\Documents\Visual Studio 2015\Projects\CrewChief\CrewChief\obj\Debug\App.g.cs
+C:\Users\mprof\Documents\Visual Studio 2015\Projects\CrewChief\CrewChief\obj\Debug\CrewChief_MarkupCompile.cache
+C:\Users\mprof\Documents\Visual Studio 2015\Projects\CrewChief\CrewChief\obj\Debug\CrewChief_MarkupCompile.lref
+C:\Users\mprof\Documents\Visual Studio 2015\Projects\CrewChief\CrewChief\obj\Debug\MainWindow.baml
+C:\Users\mprof\Documents\Visual Studio 2015\Projects\CrewChief\CrewChief\obj\Debug\CrewChief.g.resources
+C:\Users\mprof\Documents\Visual Studio 2015\Projects\CrewChief\CrewChief\obj\Debug\CrewChief.Properties.Resources.resources
+C:\Users\mprof\Documents\Visual Studio 2015\Projects\CrewChief\CrewChief\obj\Debug\CrewChief.csproj.GenerateResource.Cache
+C:\Users\mprof\Documents\Visual Studio 2015\Projects\CrewChief\CrewChief\obj\Debug\CrewChief.exe
+C:\Users\mprof\Documents\Visual Studio 2015\Projects\CrewChief\CrewChief\obj\Debug\CrewChief.pdb
+C:\Users\Mike\OneDrive\Projects\CrewChief\CrewChief\bin\Debug\CrewChief.exe.config
+C:\Users\Mike\OneDrive\Projects\CrewChief\CrewChief\obj\Debug\CrewChief.exe
+C:\Users\Mike\OneDrive\Projects\CrewChief\CrewChief\obj\Debug\CrewChief.pdb
+C:\Users\Mike\OneDrive\Projects\CrewChief\CrewChief\obj\Debug\CrewChief.csprojResolveAssemblyReference.cache
+C:\Users\Mike\OneDrive\Projects\CrewChief\CrewChief\obj\Debug\MainWindow.g.cs
+C:\Users\Mike\OneDrive\Projects\CrewChief\CrewChief\obj\Debug\App.g.cs
+C:\Users\Mike\OneDrive\Projects\CrewChief\CrewChief\obj\Debug\CrewChief_MarkupCompile.cache
+C:\Users\Mike\OneDrive\Projects\CrewChief\CrewChief\obj\Debug\CrewChief_MarkupCompile.lref
+C:\Users\Mike\OneDrive\Projects\CrewChief\CrewChief\bin\Debug\CrewChief.exe
+C:\Users\Mike\OneDrive\Projects\CrewChief\CrewChief\bin\Debug\CrewChief.pdb
+C:\Users\Mike\OneDrive\Projects\CrewChief\CrewChief\bin\Debug\iRacingSdkWrapper.dll
+C:\Users\Mike\OneDrive\Projects\CrewChief\CrewChief\bin\Debug\iRSDKSharp.dll
+C:\Users\Mike\OneDrive\Projects\CrewChief\CrewChief\bin\Debug\YamlDotNet.dll
+C:\Users\Mike\OneDrive\Projects\CrewChief\CrewChief\bin\Debug\iRacingSdkWrapper.pdb
+C:\Users\Mike\OneDrive\Projects\CrewChief\CrewChief\bin\Debug\iRSDKSharp.pdb
+C:\Users\Mike\OneDrive\Projects\CrewChief\CrewChief\bin\Debug\YamlDotNet.pdb
+C:\Users\Mike\OneDrive\Projects\CrewChief\CrewChief\bin\Debug\YamlDotNet.xml
+C:\Users\Mike\OneDrive\Projects\CrewChief\CrewChief\obj\Debug\MainWindow.baml
+C:\Users\Mike\OneDrive\Projects\CrewChief\CrewChief\obj\Debug\CrewChief.g.resources
+C:\Users\Mike\OneDrive\Projects\CrewChief\CrewChief\obj\Debug\CrewChief.Properties.Resources.resources
+C:\Users\Mike\OneDrive\Projects\CrewChief\CrewChief\obj\Debug\CrewChief.csproj.GenerateResource.Cache
+C:\Users\mprof\OneDrive\Projects\CrewChief\CrewChief\bin\Debug\CrewChief.exe.config
+C:\Users\mprof\OneDrive\Projects\CrewChief\CrewChief\obj\Debug\CrewChief.exe
+C:\Users\mprof\OneDrive\Projects\CrewChief\CrewChief\obj\Debug\CrewChief.pdb
+C:\Users\mprof\OneDrive\Projects\CrewChief\CrewChief\bin\Debug\CrewChief.exe
+C:\Users\mprof\OneDrive\Projects\CrewChief\CrewChief\bin\Debug\CrewChief.pdb
+C:\Users\mprof\OneDrive\Projects\CrewChief\CrewChief\bin\Debug\iRacingSdkWrapper.dll
+C:\Users\mprof\OneDrive\Projects\CrewChief\CrewChief\bin\Debug\iRSDKSharp.dll
+C:\Users\mprof\OneDrive\Projects\CrewChief\CrewChief\bin\Debug\YamlDotNet.dll
+C:\Users\mprof\OneDrive\Projects\CrewChief\CrewChief\bin\Debug\iRacingSdkWrapper.pdb
+C:\Users\mprof\OneDrive\Projects\CrewChief\CrewChief\bin\Debug\iRSDKSharp.pdb
+C:\Users\mprof\OneDrive\Projects\CrewChief\CrewChief\bin\Debug\YamlDotNet.pdb
+C:\Users\mprof\OneDrive\Projects\CrewChief\CrewChief\bin\Debug\YamlDotNet.xml
+C:\Users\mprof\OneDrive\Projects\CrewChief\CrewChief\obj\Debug\CrewChief.csprojResolveAssemblyReference.cache
+C:\Users\mprof\OneDrive\Projects\CrewChief\CrewChief\obj\Debug\MainWindow.g.cs
+C:\Users\mprof\OneDrive\Projects\CrewChief\CrewChief\obj\Debug\App.g.cs
+C:\Users\mprof\OneDrive\Projects\CrewChief\CrewChief\obj\Debug\CrewChief_MarkupCompile.cache
+C:\Users\mprof\OneDrive\Projects\CrewChief\CrewChief\obj\Debug\CrewChief_MarkupCompile.lref
+C:\Users\mprof\OneDrive\Projects\CrewChief\CrewChief\obj\Debug\MainWindow.baml
+C:\Users\mprof\OneDrive\Projects\CrewChief\CrewChief\obj\Debug\CrewChief.g.resources
+C:\Users\mprof\OneDrive\Projects\CrewChief\CrewChief\obj\Debug\CrewChief.Properties.Resources.resources
+C:\Users\mprof\OneDrive\Projects\CrewChief\CrewChief\obj\Debug\CrewChief.csproj.GenerateResource.Cache
+C:\Users\mprofitt\OneDrive\Projects\CrewChief\CrewChief\obj\Debug\MainWindow.g.cs
+C:\Users\mprofitt\OneDrive\Projects\CrewChief\CrewChief\obj\Debug\App.g.cs
+C:\Users\mprofitt\OneDrive\Projects\CrewChief\CrewChief\obj\Debug\CrewChief_MarkupCompile.cache
+C:\Users\mprofitt\OneDrive\Projects\CrewChief\CrewChief\obj\Debug\CrewChief_MarkupCompile.lref
+C:\Users\mprofitt\OneDrive\Projects\CrewChief\CrewChief\obj\Debug\CrewChief.pdb
+C:\Users\mprofitt\OneDrive\Projects\CrewChief\CrewChief\bin\Debug\CrewChief.exe.config
+C:\Users\mprofitt\OneDrive\Projects\CrewChief\CrewChief\bin\Debug\CrewChief.exe
+C:\Users\mprofitt\OneDrive\Projects\CrewChief\CrewChief\bin\Debug\CrewChief.pdb
+C:\Users\mprofitt\OneDrive\Projects\CrewChief\CrewChief\bin\Debug\iRacingSdkWrapper.dll
+C:\Users\mprofitt\OneDrive\Projects\CrewChief\CrewChief\bin\Debug\iRSDKSharp.dll
+C:\Users\mprofitt\OneDrive\Projects\CrewChief\CrewChief\bin\Debug\YamlDotNet.dll
+C:\Users\mprofitt\OneDrive\Projects\CrewChief\CrewChief\bin\Debug\iRacingSdkWrapper.pdb
+C:\Users\mprofitt\OneDrive\Projects\CrewChief\CrewChief\bin\Debug\iRSDKSharp.pdb
+C:\Users\mprofitt\OneDrive\Projects\CrewChief\CrewChief\bin\Debug\YamlDotNet.pdb
+C:\Users\mprofitt\OneDrive\Projects\CrewChief\CrewChief\bin\Debug\YamlDotNet.xml
+C:\Users\mprofitt\OneDrive\Projects\CrewChief\CrewChief\obj\Debug\MainWindow.baml
+C:\Users\mprofitt\OneDrive\Projects\CrewChief\CrewChief\obj\Debug\CrewChief.g.resources
+C:\Users\mprofitt\OneDrive\Projects\CrewChief\CrewChief\obj\Debug\CrewChief.Properties.Resources.resources
+C:\Users\mprofitt\OneDrive\Projects\CrewChief\CrewChief\obj\Debug\CrewChief.csproj.GenerateResource.Cache
+C:\Users\mprofitt\OneDrive\Projects\CrewChief\CrewChief\obj\Debug\CrewChief.exe
+C:\Users\mprofitt\OneDrive\Projects\CrewChief\CrewChief\obj\Debug\CrewChief.csprojResolveAssemblyReference.cache
+C:\Users\Mike\OneDrive\Projects\CrewChief\CrewChief\obj\Debug\CrewChief.csproj.CoreCompileInputs.cache
+C:\Users\Mike\Source\Repos\CrewChief\CrewChief\bin\Debug\CrewChief.exe.config
+C:\Users\Mike\Source\Repos\CrewChief\CrewChief\bin\Debug\CrewChief.exe
+C:\Users\Mike\Source\Repos\CrewChief\CrewChief\bin\Debug\CrewChief.pdb
+C:\Users\Mike\Source\Repos\CrewChief\CrewChief\bin\Debug\iRacingSdkWrapper.pdb
+C:\Users\Mike\Source\Repos\CrewChief\CrewChief\bin\Debug\iRSDKSharp.pdb
+C:\Users\Mike\Source\Repos\CrewChief\CrewChief\bin\Debug\YamlDotNet.pdb
+C:\Users\Mike\Source\Repos\CrewChief\CrewChief\bin\Debug\YamlDotNet.xml
+C:\Users\Mike\Source\Repos\CrewChief\CrewChief\obj\Debug\CrewChief.csprojResolveAssemblyReference.cache
+C:\Users\Mike\Source\Repos\CrewChief\CrewChief\obj\Debug\MainWindow.g.cs
+C:\Users\Mike\Source\Repos\CrewChief\CrewChief\obj\Debug\App.g.cs
+C:\Users\Mike\Source\Repos\CrewChief\CrewChief\obj\Debug\CrewChief_MarkupCompile.cache
+C:\Users\Mike\Source\Repos\CrewChief\CrewChief\obj\Debug\CrewChief_MarkupCompile.lref
+C:\Users\Mike\Source\Repos\CrewChief\CrewChief\obj\Debug\MainWindow.baml
+C:\Users\Mike\Source\Repos\CrewChief\CrewChief\obj\Debug\CrewChief.g.resources
+C:\Users\Mike\Source\Repos\CrewChief\CrewChief\obj\Debug\CrewChief.Properties.Resources.resources
+C:\Users\Mike\Source\Repos\CrewChief\CrewChief\obj\Debug\CrewChief.csproj.GenerateResource.Cache
+C:\Users\Mike\Source\Repos\CrewChief\CrewChief\obj\Debug\CrewChief.csproj.CoreCompileInputs.cache
+C:\Users\Mike\Source\Repos\CrewChief\CrewChief\obj\Debug\CrewChief.exe
+C:\Users\Mike\Source\Repos\CrewChief\CrewChief\obj\Debug\CrewChief.pdb
