@@ -102,3 +102,4 @@ C:\Users\Mike\Source\Repos\CrewChief\CrewChief\obj\Debug\CrewChief.csproj.Genera
 C:\Users\Mike\Source\Repos\CrewChief\CrewChief\obj\Debug\CrewChief.csproj.CoreCompileInputs.cache
 C:\Users\Mike\Source\Repos\CrewChief\CrewChief\obj\Debug\CrewChief.exe
 C:\Users\Mike\Source\Repos\CrewChief\CrewChief\obj\Debug\CrewChief.pdb
+C:\Users\Mike\Source\Repos\CrewChief\CrewChief\bin\Debug\YamlDotNet.dll

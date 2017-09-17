@@ -1,5 +1,5 @@
-﻿/* This code is from the branch CrewChief-Testing
- */
+﻿/* This code is from the branch CrewChief developement branch
+*/
 
 using System;
 using System.Windows;
@@ -211,9 +211,10 @@ namespace CrewChief
             var isOnTrack = wrapper.GetTelemetryValue<bool>("IsOnTrack").Value;
 
             if (isOnTrack && !status.Flag.HasFlag(Status.Flags.Ready))
+            {
                 status.Flag |= Status.Flags.Ready;
-            else if (!isOnTrack && status.Flag.HasFlag(Status.Flags.Ready))
-                status.Flag = 0;
+            }
+            else status.Flag = 0;
 
             this.UpdateCarTelemetry(e.TelemetryInfo);
             this.UpdateDriversTelemetry(e.TelemetryInfo);
@@ -494,6 +495,7 @@ namespace CrewChief
             {
                 foreach (PromptBuilder sentence in QueuedSpeech)
                 {
+                    //Debug.WriteLine("QueuedSpeech: {0)", sentence);
                     synthesizer.SpeakAsync(sentence);
                 }
                 QueuedSpeech.Clear();
@@ -561,13 +563,14 @@ namespace CrewChief
 
         private void AnalyzeRecognizedSpeech(string text)
         {
+            Debug.WriteLine("**** Analyzing Speech\n");
             //
             // Regex.Match(speech, @"\btomorrow(')*s\b\s+\bdate\b", RegexOptions.IgnoreCase)
             //
 
             status.Flag |= Status.Flags.Analyzing;
 
-            PromptBuilder pb = new PromptBuilder();
+            //PromptBuilder pb = new PromptBuilder();
 
             if (status.Flag.HasFlag(Status.Flags.Listening))
             {
@@ -804,7 +807,7 @@ namespace CrewChief
                 else AnalysisFailed();
             }
 
-            if (!status.Flag.HasFlag(Status.Flags.Listening))
+            else if (!status.Flag.HasFlag(Status.Flags.Listening))
             {
                 if (text.Equals("lap timing") || text.Equals("f1"))
                     Sim.BlackBox.Change(Sim.BlackBox.Type.LapTiming);
@@ -1100,6 +1103,7 @@ namespace CrewChief
             PromptBuilder pb = new PromptBuilder();
             pb.AppendText(text);
             pb.AppendBreak();
+            QueuedSpeech.Enqueue(pb);
         }
 
         public static void Reset(System.Timers.Timer timer)
