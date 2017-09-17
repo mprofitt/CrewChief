@@ -11,7 +11,7 @@ namespace CrewChief
     {
         public static float LapDist { get; set; }
         public static float TrackPitSpeedLimit { get; set; }
-        public static float DriverPitPos { get; set; }
+        public static float DriverPitTrkPct { get; set; }
         public static float TrackLength { get; set; } // Length of track in km
         public static float meters;
 
