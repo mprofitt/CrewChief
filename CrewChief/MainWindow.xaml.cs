@@ -40,7 +40,7 @@ namespace CrewChief
         public SdkWrapper wrapper;
 
         private Queue<PromptBuilder> QueuedSpeech = new Queue<PromptBuilder>();
-        private Queue<PromptBuilder> BUQueuedSpeech = new Queue<PromptBuilder>();
+        private Queue<PromptBuilder> PlayingQueuedSpeech = new Queue<PromptBuilder>();
 
         private System.Timers.Timer timerCrewChief;
         private System.Timers.Timer timerPitRoad;
@@ -157,8 +157,8 @@ namespace CrewChief
             isUpdatingDrivers = true;
             YamlQuery query = null;
 
-            query = e.SessionInfo["DriverInfo"]["DriverPitTrkPct"];
-            PitStallSignal.DriverPitPos = float.Parse(GetSessionInfoValue(e.SessionInfo, query));
+            //query = e.SessionInfo["DriverInfo"]["DriverPitTrkPct"];
+            //PitStallSignal.DriverPitPos = float.Parse(GetSessionInfoValue(e.SessionInfo, query));
 
             //query = e.SessionInfo["CarSetup"]["Chassis"]["Front"]["TapeConfiguration"];
             //Sim.Tape.Current = float.Parse(GetSessionInfoValue(e.SessionInfo, query).TrimEnd('%',' '));
@@ -485,28 +485,39 @@ namespace CrewChief
         private void synthesizer_SpeakStarted(object sender, SpeakStartedEventArgs e)
         {
             status.Flag |= Status.Flags.Speaking;
-            SoundPlayer audio = new SoundPlayer(CrewChief.Properties.Resources.RadioMicKeyUp);
-            audio.PlaySync();
         }
 
         private void synthesizerSpeak()
         {
+            PlayingQueuedSpeech = QueuedSpeech;
+
             if (!status.Flag.HasFlag(Status.Flags.Speaking))
             {
-                foreach (PromptBuilder sentence in QueuedSpeech)
+                int queueCount = PlayingQueuedSpeech.Count;
+                while (PlayingQueuedSpeech.Count > 0)
                 {
-                    //Debug.WriteLine("QueuedSpeech: {0)", sentence);
-                    synthesizer.SpeakAsync(sentence);
+                    if (PlayingQueuedSpeech.Count == queueCount)
+                    {
+                        SoundPlayer audio = new SoundPlayer(CrewChief.Properties.Resources.RadioMicKeyUp);
+                    }
+                    synthesizer.SpeakAsync(PlayingQueuedSpeech.Dequeue());
                 }
-                QueuedSpeech.Clear();
+                if (PlayingQueuedSpeech.Count == 0)
+                {
+                    QueuedSpeech.Clear();
+                }
             }
         }
 
         private void Synthesizer_SpeakCompleted(object sender, SpeakCompletedEventArgs e)
         {
-            SoundPlayer audio = new SoundPlayer(CrewChief.Properties.Resources.RadioMicKeyUp);
-            audio.Play();
-            status.Flag &= ~Status.Flags.Speaking;
+
+            if (PlayingQueuedSpeech.Count == 0)
+            {
+                SoundPlayer audio = new SoundPlayer(CrewChief.Properties.Resources.RadioMicKeyUp);
+                audio.Play();
+                status.Flag &= ~Status.Flags.Speaking;
+            }
         }
 
         private Grammar CreateGrammar1()
