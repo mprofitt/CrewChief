@@ -111,13 +111,28 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="AllDrivers.cs" />
     <Compile Include="Car.cs" />
+    <Compile Include="Drivers\Driver.cs" />
+    <Compile Include="Drivers\DriverCarInfo.cs" />
+    <Compile Include="Drivers\DriverChampInfo.cs" />
+    <Compile Include="Drivers\DriverLiveInfo.cs" />
+    <Compile Include="Drivers\DriverPitInfo.cs" />
+    <Compile Include="Drivers\DriverPrivateInfo.cs" />
+    <Compile Include="Drivers\DriverQualyResults.cs" />
+    <Compile Include="Drivers\DriverResults.cs" />
+    <Compile Include="Drivers\License.cs" />
+    <Compile Include="Events\RaceEvent.cs" />
+    <Compile Include="Laptime.cs" />
+    <Compile Include="Parser.cs" />
     <Compile Include="PitStallSignal.cs" />
     <Compile Include="RaceControl.cs" />
+    <Compile Include="Sector.cs" />
+    <Compile Include="SessionData.cs" />
+    <Compile Include="PitStop.cs" />
     <Compile Include="Sim.cs" />
-    <Compile Include="Driver.cs" />
-    <Compile Include="SimOld.cs" />
+    <Compile Include="TimeDelta.cs" />
+    <Compile Include="Track.cs" />
+    <Compile Include="TrackConditions.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

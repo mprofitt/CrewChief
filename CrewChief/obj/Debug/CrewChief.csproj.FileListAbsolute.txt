@@ -86,11 +86,8 @@ C:\Users\Mike\OneDrive\Projects\CrewChief\CrewChief\obj\Debug\CrewChief.csproj.C
 C:\Users\Mike\Source\Repos\CrewChief\CrewChief\bin\Debug\CrewChief.exe.config
 C:\Users\Mike\Source\Repos\CrewChief\CrewChief\bin\Debug\CrewChief.exe
 C:\Users\Mike\Source\Repos\CrewChief\CrewChief\bin\Debug\CrewChief.pdb
-C:\Users\Mike\Source\Repos\CrewChief\CrewChief\bin\Debug\iRacingSdkWrapper.pdb
-C:\Users\Mike\Source\Repos\CrewChief\CrewChief\bin\Debug\iRSDKSharp.pdb
 C:\Users\Mike\Source\Repos\CrewChief\CrewChief\bin\Debug\YamlDotNet.pdb
 C:\Users\Mike\Source\Repos\CrewChief\CrewChief\bin\Debug\YamlDotNet.xml
-C:\Users\Mike\Source\Repos\CrewChief\CrewChief\obj\Debug\CrewChief.csprojResolveAssemblyReference.cache
 C:\Users\Mike\Source\Repos\CrewChief\CrewChief\obj\Debug\MainWindow.g.cs
 C:\Users\Mike\Source\Repos\CrewChief\CrewChief\obj\Debug\App.g.cs
 C:\Users\Mike\Source\Repos\CrewChief\CrewChief\obj\Debug\CrewChief_MarkupCompile.cache
@@ -103,3 +100,4 @@ C:\Users\Mike\Source\Repos\CrewChief\CrewChief\obj\Debug\CrewChief.csproj.CoreCo
 C:\Users\Mike\Source\Repos\CrewChief\CrewChief\obj\Debug\CrewChief.exe
 C:\Users\Mike\Source\Repos\CrewChief\CrewChief\obj\Debug\CrewChief.pdb
 C:\Users\Mike\Source\Repos\CrewChief\CrewChief\bin\Debug\YamlDotNet.dll
+C:\Users\Mike\Source\Repos\CrewChief\CrewChief\obj\Debug\CrewChief.csprojResolveAssemblyReference.cache

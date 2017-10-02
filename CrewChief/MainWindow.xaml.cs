@@ -25,7 +25,8 @@ using iRSDKSharp;
 using System.Diagnostics;
 using System.Collections.ObjectModel;
 using System.Windows.Data;
-
+using CrewChief.Drivers;
+using CrewChief.Events;
 
 namespace CrewChief
 {
@@ -37,48 +38,29 @@ namespace CrewChief
         private SpeechRecognitionEngine recognizer;
         private SpeechSynthesizer synthesizer;
 
-        public SdkWrapper wrapper;
-
-        private Queue<PromptBuilder> QueuedSpeech = new Queue<PromptBuilder>();
-        private Queue<PromptBuilder> PlayingQueuedSpeech = new Queue<PromptBuilder>();
+        private List<PromptBuilder> QueuedSpeech = new List<PromptBuilder>();
+        private List<PromptBuilder> PlayingQueuedSpeech = new List<PromptBuilder>();
 
         private System.Timers.Timer timerCrewChief;
         private System.Timers.Timer timerPitRoad;
         private System.Timers.Timer timerLeaderOnPitRoad;
 
         private bool isUpdatingDrivers = true;
-        private List<Driver> drivers;
-
-        private int currentSessionNum;
-        //private Status.Flags Flag;
-
-        private Driver leaderOnPitRoad = null;
+        private int MyID;
 
         private Status status;
-
-        //[Flags]
-        //enum Flags
-        //{
-        //    Listening = 0x0001,
-        //    Ready = 0x0002,
-        //    Analyzing = 0x0004,
-        //    Speaking = 0x0008,
-        //    PitPos = 0x0010,
-        //    LeaderOnPitRoad = 0x0011,
-        //}
 
         public MainWindow()
         {
             InitializeComponent();
 
-            wrapper = new SdkWrapper();
-            wrapper.EventRaiseType = SdkWrapper.EventRaiseTypes.CurrentThread;
-            wrapper.TelemetryUpdateFrequency = 10;
-            wrapper.Connected += wrapper_Connected;
-            wrapper.Disconnected += wrapper_Disconnected;
-            wrapper.SessionInfoUpdated += wrapper_SessionInfoUpdated;
-            wrapper.TelemetryUpdated += wrapper_TelemetryUpdated;
-            wrapper.Start();
+            // Initialize the sim communication
+            Sim.Instance.SessionInfoUpdated += OnSessionInfoUpdated;
+            Sim.Instance.TelemetryUpdated += OnTelemetryUpdated;
+            Sim.Instance.Connected += OnSimConnected;
+            Sim.Instance.Disconnected += OnSimDisconnected;
+            Sim.Instance.RaceEvent += OnRaceEvent;
+            Sim.Instance.Start();
 
             recognizer = new SpeechRecognitionEngine();
             //recognizer.SetInputToNull();
@@ -117,11 +99,6 @@ namespace CrewChief
             timerLeaderOnPitRoad.Enabled = false;
             timerLeaderOnPitRoad.AutoReset = false;
 
-            // binding = new BindingSource();
-            drivers = new List<Driver>();
-            // binding.DataSource = drivers;
-            // driverDataGrid.DataSource = drivers;
-
         }
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
@@ -133,26 +110,25 @@ namespace CrewChief
 
         private void OnStatusChange(object sender, PropertyChangedEventArgs e)
         {
-            Debug.WriteLine("**** Status.Flag: {0}", status.Flag);
+            //Debug.WriteLine("**** Status.Flag: {0}", status.Flag);
         }
 
-        private void wrapper_Connected(object sender, EventArgs e)
+        private void OnSimConnected(object sender, EventArgs e)
         {
-            Debug.WriteLine("**** Wrapper Connected ****\n");
+            Debug.WriteLine("**** OnSimConnected ****\n");
             recognizer.RecognizeAsync(RecognizeMode.Multiple);
         }
 
-        private void wrapper_Disconnected(object sender, EventArgs e)
+        private void OnSimDisconnected(object sender, EventArgs e)
         {
-            Debug.WriteLine("**** Wrapper Disconnected ****\n");
+            Debug.WriteLine("**** OnSimDisconnected ****\n");
 
             recognizer.RecognizeAsyncStop();
-            drivers.Clear();
             status.Flag = 0;
             Car.ClearPitStop();
         }
 
-        private void wrapper_SessionInfoUpdated(object sender, SdkWrapper.SessionInfoUpdatedEventArgs e)
+        private void OnSessionInfoUpdated(object sender, SdkWrapper.SessionInfoUpdatedEventArgs e)
         {
             isUpdatingDrivers = true;
             YamlQuery query = null;
@@ -184,6 +160,8 @@ namespace CrewChief
             query = e.SessionInfo["DriverInfo"]["DriverCarMaxFuelPct"];
             Car.Fuel.MaxFuelPct = float.Parse(GetSessionInfoValue(e.SessionInfo, query));
 
+            MyID = (int)myIdx;
+
             this.ParseDrivers(e.SessionInfo);
 
             isUpdatingDrivers = false;
@@ -203,260 +181,180 @@ namespace CrewChief
             return "0";
         }
 
-        private void wrapper_TelemetryUpdated(object sender, SdkWrapper.TelemetryUpdatedEventArgs e)
+        private void OnTelemetryUpdated(object sender, SdkWrapper.TelemetryUpdatedEventArgs e)
         {
             if (isUpdatingDrivers) return;
 
             // Enable / Disable CrewChief
-            var isOnTrack = wrapper.GetTelemetryValue<bool>("IsOnTrack").Value;
+            var isOnTrack = e.TelemetryInfo.IsOnTrack.Value;
 
             if (isOnTrack && !status.Flag.HasFlag(Status.Flags.Ready))
             {
                 status.Flag |= Status.Flags.Ready;
             }
-            else status.Flag = 0;
+            if (!isOnTrack) status.Flag = 0;
 
             this.UpdateCarTelemetry(e.TelemetryInfo);
             this.UpdateDriversTelemetry(e.TelemetryInfo);
         }
 
+        private void OnRaceEvent(object sender, Sim.RaceEventArgs e)
+        {
+            if (e.Event.Type == RaceEvent.EventTypes.GreenFlag)
+            {
+                EnqueueSpeech("green flag, go go go");
+                synthesizerSpeak();
+            }
+            if (e.Event.Type == RaceEvent.EventTypes.YellowFlag)
+            {
+                EnqueueSpeech("yellow flag is out, pace speed");
+                synthesizerSpeak();
+            }
+            if (e.Event.Type == RaceEvent.EventTypes.PitEntry)
+            {
+                Debug.WriteLine("*** RaceEvent.EventType.PitEntry ***");
+                Debug.WriteLine("\te.Event.Driver.Id = {0}", e.Event.Driver.Id);
+                Debug.WriteLine("\te.Event.Driver.Name = " + Convert.ToString(e.Event.Driver.Name) + "\n");
+
+                if (MyID == e.Event.Driver.Id)
+                {
+
+                    var change = new PitCommandControl.TireChange();
+
+                    if (Car.Tire.Change.LF) change.LeftFront.Change = true;
+                    if (Car.Tire.Change.RF) change.RightFront.Change = true;
+                    if (Car.Tire.Change.LR) change.LeftRear.Change = true;
+                    if (Car.Tire.Change.RR) change.RightRear.Change = true;
+
+                    if (Car.Tire.Pressure.LF != 0)
+                    {
+                        change.LeftFront.Change = true;
+                        change.LeftFront.Pressure = (int)Car.Tire.Pressure.LFcold + (int)Car.Tire.Pressure.LF;
+                    }
+                    if (Car.Tire.Pressure.RF != 0)
+                    {
+                        change.RightFront.Change = true;
+                        change.RightFront.Pressure = (int)Car.Tire.Pressure.RFcold + (int)Car.Tire.Pressure.RF;
+                    }
+                    if (Car.Tire.Pressure.LR != 0)
+                    {
+                        change.LeftRear.Change = true;
+                        change.LeftRear.Pressure = (int)Car.Tire.Pressure.LRcold + (int)Car.Tire.Pressure.LR;
+                    }
+                    if (Car.Tire.Pressure.RR != 0)
+                    {
+                        change.RightRear.Change = true;
+                        change.RightRear.Pressure = (int)Car.Tire.Pressure.RRcold + (int)Car.Tire.Pressure.RR;
+                    }
+
+                    Sim.Instance.Sdk.PitCommands.ChangeTires(change);
+
+                    if (Car.Fuel.Amount > 0) Sim.Instance.Sdk.PitCommands.AddFuel((int)Car.Fuel.Amount);
+
+                    if (Car.Windscreen.TearOff) Sim.Instance.Sdk.PitCommands.Tearoff();
+
+                    if (Car.FastRepair) Sim.Instance.Sdk.PitCommands.FastRepair();
+
+                    if (Car.Chassis.Wedge != 0) Car.Chassis.AdjustWedge();
+                }
+                else return;
+            }
+
+            if (e.Event.Type == RaceEvent.EventTypes.PitStallEnter)
+            {
+                Debug.WriteLine("*** OnRaceEvent - Entered Pit Stall ***\n");
+                Car.ClearPitStop();
+            }
+
+            if (e.Event.Type == RaceEvent.EventTypes.PitExit)
+            {
+                Car.ClearPitStop();
+            }
+
+            if (e.Event.Type == RaceEvent.EventTypes.Winner)
+            { }
+        }
+
         private void UpdateCarTelemetry(TelemetryInfo info)
         {
             //Car.FuelLevelGal = (float)0.26417 * wrapper.GetTelemetryValue<float>("FuelLevel").Value;
-            Car.Fuel.FuelLevelPct = wrapper.GetTelemetryValue<float>("FuelLevelPct").Value;
-            Car.Tire.Pressure.LFcoldPressure = wrapper.GetTelemetryValue<float>("LFcoldPressure").Value;
-            Car.Tire.Pressure.RFcoldPressure = wrapper.GetTelemetryValue<float>("RFcoldPressure").Value;
-            Car.Tire.Pressure.LRcoldPressure = wrapper.GetTelemetryValue<float>("LRcoldPressure").Value;
-            Car.Tire.Pressure.RRcoldPressure = wrapper.GetTelemetryValue<float>("RRcoldPressure").Value;
-            Car.Speed = wrapper.GetTelemetryValue<float>("Speed").Value;
+            Car.Fuel.FuelLevelPct = info.FuelLevelPct.Value;
+
         }
 
         private void UpdateDriversTelemetry(TelemetryInfo info)
         {
             // Get your own driver entry
             // This strange " => " syntax is called a lambda expression and is short for a loop through all drivers
-            Driver me = drivers.FirstOrDefault(d => d.Id == wrapper.DriverId);
-
-            // Get arrays of the laps, distances, track surfaces of every driver
-            var laps = info.CarIdxLap.Value;
-            var lapDistances = info.CarIdxLapDistPct.Value;
-            var trackSurfaces = info.CarIdxTrackSurface.Value;
-            var position = info.CarIdxPosition.Value;
-            var estTime = info.CarIdxEstTime.Value;
-
-            foreach (Driver driver in drivers)
+            foreach (var driver in Sim.Instance.Drivers)
             {
-                driver.Lap = laps[driver.Id];
-                driver.LapDistance = lapDistances[driver.Id];
-                driver.TrackSurface = trackSurfaces[driver.Id];
-                driver.Position = position[driver.Id];
-                driver.EstTime = estTime[driver.Id];
-
-                if (driver.IsOnTrack && me.IsOnTrack)
-                {
-                    driver.RelativeToMe = driver.EstTime - me.EstTime;
-                    //Debug.WriteLine("driver.Number: {0} driver.RelativeToMe: {1}", driver.Number, driver.RelativeToMe);
-                }
-
-                if (driver.Position == 1 || leaderOnPitRoad == driver)
-                {
-                    if (leaderOnPitRoad == null && driver.IsInPits && driver.LastTrackSurface == TrackSurfaces.OnTrack)
-                    {
-                        leaderOnPitRoad = driver;
-                        timerLeaderOnPitRoad.Enabled = true;
-                        timerLeaderOnPitRoad.Start();
-                    }
-
-                    else if (leaderOnPitRoad == driver && !driver.IsInPits)
-                    {
-                        timerLeaderOnPitRoad.Stop();
-                        if (timerLeaderOnPitRoad.Enabled) timerLeaderOnPitRoad.Enabled = false;
-                        leaderOnPitRoad = null;
-                    }
-                }
-
-                // If your own driver exists, use it to calculate the relative distance between you and the other driver
-                if (me != null)
-                {
-                    var relative = driver.LapDistance - me.LapDistance;
-
-                    // If driver is more than half the track behind, subtract 100% track length
-                    // and vice versa
-                    if (relative > 0.5) relative -= 1;
-                    else if (relative < -0.5) relative += 1;
-
-                    driver.RelativeLapDistance = relative;
-                }
-                else
-                {
-                    driver.RelativeLapDistance = -1;
-                }
-
-                if (driver == me)
-                {
-                    PitStallSignal.LapDist = driver.LapDistance;
-                    if (driver.TrackSurface == TrackSurfaces.AproachingPits)
-                    {
-                        if (PitStallSignal.MetersToPitStall() / Car.Speed < 5.5 && !status.Flag.HasFlag(Status.Flags.PitPos))
-                        {
-                            status.Flag |= Status.Flags.PitPos;
-
-                            if (!status.Flag.HasFlag(Status.Flags.Listening))
-                            {
-                                PromptBuilder pb = new PromptBuilder();
-                                pb.AppendText("Pistaall turn in 3");
-                                pb.AppendBreak(new TimeSpan(2500000));
-                                pb.AppendText("2");
-                                pb.AppendBreak(new TimeSpan(1500000));
-                                pb.AppendText("1");
-                                pb.AppendBreak(new TimeSpan(1500000));
-                                pb.AppendText("now!");
-                                QueuedSpeech.Enqueue(pb);
-                                synthesizerSpeak();
-                            }
-                        }
-                    }
-
-                    if (driver.TrackSurface == TrackSurfaces.InPitStall)
-                        if (driver.LastTrackSurface != driver.TrackSurface) Debug.WriteLine("*** InPitStall *** LastTrackSurface: {0}\n", driver.LastTrackSurface);
-
-                    if (driver.TrackSurface == TrackSurfaces.NotInWorld)
-                        if (driver.LastTrackSurface != driver.TrackSurface) Debug.WriteLine("*** NotInWorld *** LastTrackSurface: {0}\n", driver.LastTrackSurface);
-
-                    if (driver.TrackSurface == TrackSurfaces.OnTrack)
-                        if (driver.LastTrackSurface != driver.TrackSurface) Debug.WriteLine("*** OnTrack *** LastTrackSurface: {0}\n", driver.LastTrackSurface);
-
-                    if (driver.TrackSurface == TrackSurfaces.OffTrack)
-                        if (driver.LastTrackSurface != driver.TrackSurface) Debug.WriteLine("*** OffTrack *** LastTrackSurface: {0}\n", driver.LastTrackSurface);
-
-                    if (driver.TrackSurface == TrackSurfaces.AproachingPits && driver.LastTrackSurface == TrackSurfaces.OnTrack)
-                        if (driver.LastTrackSurface != driver.TrackSurface) Debug.WriteLine("*** AproachingPits *** LastTrackSurface: {0}\n", driver.LastTrackSurface);
-
-                    if (driver.TrackSurface == TrackSurfaces.InPitStall && driver.LastTrackSurface == TrackSurfaces.AproachingPits)
-                    {
-                        Car.ClearPitStop();
-                        status.Flag &= ~Status.Flags.PitPos;
-                    }
-
-                    if (driver.TrackSurface == TrackSurfaces.AproachingPits && driver.LastTrackSurface == TrackSurfaces.OnTrack)
-                    {
-                        //Run timer for 3 seconds to make sure car stays on pit road.
-                        timerPitRoad.Enabled = true;
-                    }
-                }
-                driver.LastTrackSurface = driver.TrackSurface;
+                //Debug.WriteLine(driver.Name, Convert.ToString(driver.Live.TrackSurface), "\n");
             }
+
+
+            //    if (driver == me)
+            //    {
+            //        PitStallSignal.LapDist = driver.LapDistance;
+            //        if (driver.TrackSurface == TrackSurfaces.AproachingPits)
+            //        {
+            //            if (PitStallSignal.MetersToPitStall() / Car.Speed < 5.5 && !status.Flag.HasFlag(Status.Flags.PitPos))
+            //            {
+            //                status.Flag |= Status.Flags.PitPos;
+
+            //                if (!status.Flag.HasFlag(Status.Flags.Listening))
+            //                {
+            //                    PromptBuilder pb = new PromptBuilder();
+            //                    pb.AppendText("Pistaall turn in 3");
+            //                    pb.AppendBreak(new TimeSpan(2500000));
+            //                    pb.AppendText("2");
+            //                    pb.AppendBreak(new TimeSpan(1500000));
+            //                    pb.AppendText("1");
+            //                    pb.AppendBreak(new TimeSpan(1500000));
+            //                    pb.AppendText("now!");
+            //                    QueuedSpeech.Enqueue(pb);
+            //                    synthesizerSpeak();
+            //                }
+            //            }
+            //        }
+
+            //        if (driver.TrackSurface == TrackSurfaces.InPitStall)
+            //            if (driver.LastTrackSurface != driver.TrackSurface) Debug.WriteLine("*** InPitStall *** LastTrackSurface: {0}\n", driver.LastTrackSurface);
+
+            //        if (driver.TrackSurface == TrackSurfaces.NotInWorld)
+            //            if (driver.LastTrackSurface != driver.TrackSurface) Debug.WriteLine("*** NotInWorld *** LastTrackSurface: {0}\n", driver.LastTrackSurface);
+
+            //        if (driver.TrackSurface == TrackSurfaces.OnTrack)
+            //            if (driver.LastTrackSurface != driver.TrackSurface) Debug.WriteLine("*** OnTrack *** LastTrackSurface: {0}\n", driver.LastTrackSurface);
+
+            //        if (driver.TrackSurface == TrackSurfaces.OffTrack)
+            //            if (driver.LastTrackSurface != driver.TrackSurface) Debug.WriteLine("*** OffTrack *** LastTrackSurface: {0}\n", driver.LastTrackSurface);
+
+            //        if (driver.TrackSurface == TrackSurfaces.AproachingPits && driver.LastTrackSurface == TrackSurfaces.OnTrack)
+            //            if (driver.LastTrackSurface != driver.TrackSurface) Debug.WriteLine("*** AproachingPits *** LastTrackSurface: {0}\n", driver.LastTrackSurface);
+
+            //        if (driver.TrackSurface == TrackSurfaces.InPitStall && driver.LastTrackSurface == TrackSurfaces.AproachingPits)
+            //        {
+            //            Car.ClearPitStop();
+            //            status.Flag &= ~Status.Flags.PitPos;
+            //        }
+
+            //        if (driver.TrackSurface == TrackSurfaces.AproachingPits && driver.LastTrackSurface == TrackSurfaces.OnTrack)
+            //        {
+            //            //Run timer for 3 seconds to make sure car stays on pit road.
+            //            timerPitRoad.Enabled = true;
+            //        }
+            //    }
+            //    driver.LastTrackSurface = driver.TrackSurface;
+            //}
         }
 
         // Parse the YAML DriverInfo section that contains information such as driver id, name, license, car number, etc.
         private void ParseDrivers(SessionInfo sessionInfo)
-        {
-            int id = 0;
-            Driver driver;
-            var newDrivers = new List<Driver>();
-
-            // Loop through drivers until none are found anymore
-            do
-            {
-                driver = null;
-
-                // Construct a yaml query that finds each driver and his info in the Session Info yaml string
-                // This query can be re-used for every property for one driver (with the specified id)
-                YamlQuery query = sessionInfo["DriverInfo"]["Drivers"]["CarIdx", id];
-
-                // Try to get the UserName of the driver (because its the first value given)
-                // If the UserName value is not found (name == null) then we found all drivers and we can stop
-                string name = query["UserName"].GetValue();
-                if (name != null)
-                {
-                    //// Find this driver in the list
-                    //// This strange " => " syntax is called a lambda expression and is short for a loop through all drivers
-                    //// Read as: select the first driver 'd', if any, whose Name is equal to name.
-                    driver = drivers.FirstOrDefault(d => d.Name == name);
-
-                    if (driver == null)
-                    {
-                        // Or create a new Driver if we didn't find him before
-                        driver = new Driver();
-                        driver.Id = id;
-                        driver.Name = name;
-                        driver.CustomerId = int.Parse(query["UserID"].GetValue("0")); // Account Number - default value 0
-                        driver.Number = query["CarNumber"].GetValue("").TrimStart('\"').TrimEnd('\"'); // trim the quotes
-                        driver.ClassId = int.Parse(query["CarClassID"].GetValue("0"));
-                        driver.CarPath = query["CarPath"].GetValue();
-                        driver.CarClassRelSpeed = int.Parse(query["CarClassRelSpeed"].GetValue("0"));
-                        driver.Rating = int.Parse(query["IRating"].GetValue("0"));
-
-                        // This doesnt belong here, make a better variable
-                        driver.PitPos = float.Parse(sessionInfo["DriverInfo"]["DriverPitPos"].GetValue("0"));
-
-                    }
-                    newDrivers.Add(driver);
-                    id++;
-                }
-            } while (driver != null);
-            // Replace old list of drivers with new list of drivers and update the grid
-            drivers.Clear();
-            drivers.AddRange(newDrivers);
-        }
+        { }
 
         // Parse the YAML SessionInfo section that contains information such as lap times, position, etc.
         private void ParseTimes(SessionInfo sessionInfo)
-        {
-            int position = 1;
-            Driver driver = null;
-
-            // Loop through positions starting at 1 until no more are found
-            do
-            {
-                driver = null;
-
-                // Construct a yaml query that we can re-use again
-                YamlQuery query = sessionInfo["SessionInfo"]["Sessions"]["SessionNum", currentSessionNum]
-                    ["ResultsPositions"]["Position", position];
-
-
-                // Find the car id belonging to the current position
-                string idString = query["CarIdx"].GetValue();
-                if (idString != null)
-                {
-                    int id = int.Parse(idString);
-
-                    // Find the corresponding driver from the list
-                    // This strange " => " syntax is called a lambda expression and is short for a loop through all drivers
-                    // Read as: select the first driver 'd', if any, whose Id is equal to id.
-                    driver = drivers.FirstOrDefault(d => d.Id == id);
-
-                    if (driver != null)
-                    {
-                        driver.Position = position;
-                        driver.FastestLapTime = float.Parse(query["FastestTime"].GetValue("0"), CultureInfo.InvariantCulture);
-                        driver.LastLapTime = float.Parse(query["LastTime"].GetValue("0"), CultureInfo.InvariantCulture);
-                    }
-
-                    position++;
-                }
-
-            } while (driver != null);
-        }
-
-        private void CalculateFollowers()
-        {
-            foreach (Driver driver in drivers)
-            {
-                if (driver.RelativeLapDistance < 0 && driver.RelativeLapDistance > -.1)
-                {
-                    float range20 = 0;
-                    float range10 = 0;
-
-                    for (int i = 0; i < 20; i++) range20 = driver.RelativeLapDistanceHistory[i] + range20;
-                    for (int i = 9; i < 20; i++) range10 = driver.RelativeLapDistanceHistory[i] + range10;
-
-                    range20 = range20 / 20;
-                    range10 = range10 / 10;
-                }
-            }
-        }
+        { }
 
         private void recognizer_SpeechRecognized(object sender, SpeechRecognizedEventArgs e)
         {
@@ -466,6 +364,65 @@ namespace CrewChief
               "  Confidence score {1}\n" +
               "  Grammar used: {2}\n",
               e.Result.Text, e.Result.Confidence, e.Result.Grammar.Name);
+
+            switch (e.Result.Text.ToLower())
+            {
+                case "crew chief":
+                    if (e.Result.Confidence < .93) return;
+                    else break;
+
+                case "lap timing":
+                    if (e.Result.Confidence < .93) return;
+                    else break;
+
+                case "standings":
+                    if (e.Result.Confidence < .93) return;
+                    else break;
+
+                case "relative":
+                    if (e.Result.Confidence < .93) return;
+                    else break;
+
+                case "fuel":
+                    if (e.Result.Confidence < .93) return;
+                    else break;
+
+                case "tires":
+                    if (e.Result.Confidence < .93) return;
+                    else break;
+
+                case "tire information":
+                    if (e.Result.Confidence < .93) return;
+                    else break;
+
+                case "tire info":
+                    if (e.Result.Confidence < .93) return;
+                    else break;
+
+                case "pit stop adjustments":
+                    if (e.Result.Confidence < .93) return;
+                    else break;
+
+                case "in car adjustments":
+                    if (e.Result.Confidence < .93) return;
+                    else break;
+
+                case "graphic adjustments":
+                    if (e.Result.Confidence < .93) return;
+                    else break;
+
+                case "reset black box":
+                    if (e.Result.Confidence < .93) return;
+                    else break;
+
+                case "radio":
+                    if (e.Result.Confidence < .93) return;
+                    else break;
+
+                default:
+                    break;
+            }
+
             if (e.Result.Confidence > .5)
             {
                 if (status.Flag.HasFlag(Status.Flags.Ready) &&
@@ -489,33 +446,34 @@ namespace CrewChief
 
         private void synthesizerSpeak()
         {
+            PromptBuilder pb = new PromptBuilder();
+            pb.AppendAudio("C:\\Users\\Mike\\Source\\Repos\\CrewChief\\CrewChief\\Resources\\RadioMicKeyUp.wav");
+            QueuedSpeech.Add(pb);
+
             PlayingQueuedSpeech = QueuedSpeech;
 
             if (!status.Flag.HasFlag(Status.Flags.Speaking))
             {
                 int queueCount = PlayingQueuedSpeech.Count;
-                while (PlayingQueuedSpeech.Count > 0)
+
+                foreach (PromptBuilder item in PlayingQueuedSpeech)
                 {
-                    if (PlayingQueuedSpeech.Count == queueCount)
-                    {
-                        SoundPlayer audio = new SoundPlayer(CrewChief.Properties.Resources.RadioMicKeyUp);
-                    }
-                    synthesizer.SpeakAsync(PlayingQueuedSpeech.Dequeue());
+                    synthesizer.SpeakAsync(item);
                 }
-                if (PlayingQueuedSpeech.Count == 0)
-                {
-                    QueuedSpeech.Clear();
-                }
+
+                PlayingQueuedSpeech.Clear();
+                QueuedSpeech.Clear();
             }
         }
+
 
         private void Synthesizer_SpeakCompleted(object sender, SpeakCompletedEventArgs e)
         {
 
             if (PlayingQueuedSpeech.Count == 0)
             {
-                SoundPlayer audio = new SoundPlayer(CrewChief.Properties.Resources.RadioMicKeyUp);
-                audio.Play();
+                //SoundPlayer audio = new SoundPlayer(CrewChief.Properties.Resources.RadioMicKeyUp);
+                //audio.Play();
                 status.Flag &= ~Status.Flags.Speaking;
             }
         }
@@ -581,12 +539,11 @@ namespace CrewChief
 
             status.Flag |= Status.Flags.Analyzing;
 
-            //PromptBuilder pb = new PromptBuilder();
-
             if (status.Flag.HasFlag(Status.Flags.Listening))
             {
                 if (text.Equals("crew chief"))
                 {
+                    
                     EnqueueSpeech("still here");
                     synthesizerSpeak();
                 }
@@ -821,27 +778,27 @@ namespace CrewChief
             else if (!status.Flag.HasFlag(Status.Flags.Listening))
             {
                 if (text.Equals("lap timing") || text.Equals("f1"))
-                    Sim.BlackBox.Change(Sim.BlackBox.Type.LapTiming);
+                    PitStop.BlackBox.Change(PitStop.BlackBox.Type.LapTiming);
                 else if (text.Equals("standings") || text.Equals("f2"))
-                    Sim.BlackBox.Change(Sim.BlackBox.Type.Standings);
+                    PitStop.BlackBox.Change(PitStop.BlackBox.Type.Standings);
                 else if (text.Equals("relative") || text.Equals("f3"))
-                    Sim.BlackBox.Change(Sim.BlackBox.Type.Relative);
+                    PitStop.BlackBox.Change(PitStop.BlackBox.Type.Relative);
                 else if (text.Equals("fuel") || text.Equals("f4"))
-                    Sim.BlackBox.Change(Sim.BlackBox.Type.Fuel);
+                    PitStop.BlackBox.Change(PitStop.BlackBox.Type.Fuel);
                 else if (text.Equals("tires") || text.Equals("f5"))
-                    Sim.BlackBox.Change(Sim.BlackBox.Type.Tires);
+                    PitStop.BlackBox.Change(PitStop.BlackBox.Type.Tires);
                 else if (text.Equals("tire information") || text.Equals("tire info") || text.Equals("f6"))
-                    Sim.BlackBox.Change(Sim.BlackBox.Type.TireInformation);
+                    PitStop.BlackBox.Change(PitStop.BlackBox.Type.TireInformation);
                 else if (text.Equals("pit stop adjustments") || text.Equals("f7"))
-                    Sim.BlackBox.Change(Sim.BlackBox.Type.PitStopAdjustments);
+                    PitStop.BlackBox.Change(PitStop.BlackBox.Type.PitStopAdjustments);
                 else if (text.Equals("in car adjustments") || text.Equals("f8"))
-                    Sim.BlackBox.Change(Sim.BlackBox.Type.InCarAdjustments);
+                    PitStop.BlackBox.Change(PitStop.BlackBox.Type.InCarAdjustments);
                 else if (text.Equals("graphic adjustments") || text.Equals("f9"))
-                    Sim.BlackBox.Change(Sim.BlackBox.Type.GraphicsAdjustments);
+                    PitStop.BlackBox.Change(PitStop.BlackBox.Type.GraphicsAdjustments);
                 else if (text.Equals("radio") || text.Equals("f10"))
-                    Sim.BlackBox.Change(Sim.BlackBox.Type.Radio);
+                    PitStop.BlackBox.Change(PitStop.BlackBox.Type.Radio);
                 else if (text.Equals("reset black box"))
-                    Sim.BlackBox.ResetBlackBox();
+                    PitStop.BlackBox.ResetBlackBox();
                 else if (text.Equals("crew chief"))
                 {
                     status.Flag |= Status.Flags.Listening;
@@ -881,51 +838,15 @@ namespace CrewChief
 
         private void OnPitRoadTimer(object sender, ElapsedEventArgs e)
         {
-            Driver me = drivers.FirstOrDefault(d => d.Id == wrapper.DriverId);
+            //Driver me = drivers.FirstOrDefault(d => d.Id == wrapper.DriverId);
 
-            if (me.TrackSurface == TrackSurfaces.AproachingPits)
-            {
-                timerPitRoad.Enabled = false;
+            //if (me.TrackSurface == TrackSurfaces.AproachingPits)
+            //{
+            //    timerPitRoad.Enabled = false;
 
-                var change = new PitCommandControl.TireChange();
 
-                if (Car.Tire.Change.LF) change.LeftFront.Change = true;
-                if (Car.Tire.Change.RF) change.RightFront.Change = true;
-                if (Car.Tire.Change.LR) change.LeftRear.Change = true;
-                if (Car.Tire.Change.RR) change.RightRear.Change = true;
-
-                if (Car.Tire.Pressure.LF != 0)
-                {
-                    change.LeftFront.Change = true;
-                    change.LeftFront.Pressure = (int)Car.Tire.Pressure.LFcoldPressure + (int)Car.Tire.Pressure.LF;
-                }
-                if (Car.Tire.Pressure.RF != 0)
-                {
-                    change.RightFront.Change = true;
-                    change.RightFront.Pressure = (int)Car.Tire.Pressure.RFcoldPressure + (int)Car.Tire.Pressure.RF;
-                }
-                if (Car.Tire.Pressure.LR != 0)
-                {
-                    change.LeftRear.Change = true;
-                    change.LeftRear.Pressure = (int)Car.Tire.Pressure.LRcoldPressure + (int)Car.Tire.Pressure.LR;
-                }
-                if (Car.Tire.Pressure.RR != 0)
-                {
-                    change.RightRear.Change = true;
-                    change.RightRear.Pressure = (int)Car.Tire.Pressure.RRcoldPressure + (int)Car.Tire.Pressure.RR;
-                }
-
-                wrapper.PitCommands.ChangeTires(change);
-
-                if (Car.Fuel.Amount > 0) wrapper.PitCommands.AddFuel((int)Car.Fuel.Amount);
-
-                if (Car.Windscreen.TearOff) wrapper.PitCommands.Tearoff();
-
-                if (Car.FastRepair) wrapper.PitCommands.FastRepair();
-
-                if (Car.Chassis.Wedge != 0) Car.Chassis.AdjustWedge();
-            }
         }
+
 
         private void OnCrewChiefTimer(object sender, ElapsedEventArgs e)
         {
@@ -934,7 +855,7 @@ namespace CrewChief
 
             timerCrewChief.Stop();
             timerCrewChief.Enabled = false;
-            PromptBuilder pb = new PromptBuilder();
+            //PromptBuilder pb = new PromptBuilder();
 
             if (Car.PitStopCleared)
             {
@@ -988,7 +909,7 @@ namespace CrewChief
                     }
                     else
                     {
-                        EnqueueSpeech(string.Format("removing {0} pound to all four tires", Car.Tire.Pressure.ToPsi(Sim.Tire.LFPressure)));
+                        EnqueueSpeech(string.Format("removing {0} pound to all four tires", Car.Tire.Pressure.ToPsi(PitStop.Tire.LFPressure)));
                     }
                 }
                 else if (AllEqual(Car.Tire.Pressure.LF, Car.Tire.Pressure.LR))
@@ -1089,32 +1010,21 @@ namespace CrewChief
             }
 
             EnqueueSpeech("crew chief out");
+            
             synthesizerSpeak();
             status.Flag &= ~Status.Flags.Analyzing;
-        }
-
-        private void GetFollowers(float distance)
-        {
-            foreach (Driver driver in drivers)
-            {
-                if (driver.RelativeLapDistance < 0 && driver.RelativeLapDistance > distance)
-                {
-                    if (driver.RelativeLapDistance != 0)
-                    {
-
-                    }
-
-                }
-
-            }
         }
 
         private void EnqueueSpeech(string text)
         {
             PromptBuilder pb = new PromptBuilder();
+            if (QueuedSpeech.Count == 0)
+            {
+                pb.AppendAudio("C:\\Users\\Mike\\Source\\Repos\\CrewChief\\CrewChief\\Resources\\RadioMicKeyUp.wav");
+            }
             pb.AppendText(text);
             pb.AppendBreak();
-            QueuedSpeech.Enqueue(pb);
+            QueuedSpeech.Add(pb);
         }
 
         public static void Reset(System.Timers.Timer timer)
@@ -1191,6 +1101,10 @@ namespace CrewChief
         }
     }
 
+
+
+
+
     class Status : INotifyPropertyChanged
     {
         private Flags _flag;
@@ -1205,7 +1119,7 @@ namespace CrewChief
             Analyzing = 0x0004,
             Speaking = 0x0008,
             PitPos = 0x0010,
-           // LeaderOnPitRoad = 0x0011,
+            // LeaderOnPitRoad = 0x0011,
         }
 
         public Status()

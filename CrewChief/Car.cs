@@ -4,7 +4,7 @@ using iRacingSdkWrapper.Broadcast;
 namespace CrewChief
 {
 
-    class Car : MainWindow
+    static public class Car
     {
         public static float TapeConfiguration { get; set; }
         public static bool FastRepair { get; set; }
@@ -50,7 +50,7 @@ namespace CrewChief
             }
         }
 
-        public class Tire : MainWindow
+        static public class Tire 
         {
             public class Change
             {
@@ -60,12 +60,12 @@ namespace CrewChief
                 public static bool RR { get; set; }
             }
 
-            public class Pressure
+            static public class Pressure
             {
-                public static float LFcoldPressure { get; set; }
-                public static float RFcoldPressure { get; set; }
-                public static float LRcoldPressure { get; set; }
-                public static float RRcoldPressure { get; set; }
+                public static float LFcold { get; set; }
+                public static float RFcold { get; set; }
+                public static float LRcold { get; set; }
+                public static float RRcold { get; set; }
                 public static float LF { get; set; }
                 public static float RF { get; set; }
                 public static float LR { get; set; }
@@ -87,7 +87,7 @@ namespace CrewChief
 
             public static void AdjustWedge()
             {
-                Sim.BlackBox.ResetBlackBox();
+                PitStop.BlackBox.ResetBlackBox();
 
 
             }
