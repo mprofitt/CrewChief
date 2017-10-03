@@ -277,6 +277,7 @@ namespace CrewChief
             foreach (var driver in _drivers)
             {
                 driver.Live.CalculateSpeed(info, _sessionData.Track.Length);
+                driver.Live.CalculatePitStallProximity(info, _sessionData.Track.LengthMeters);
                 driver.UpdateLiveInfo(info);
                 driver.UpdateSectorTimes(_sessionData.Track, info);
             }
@@ -389,6 +390,7 @@ namespace CrewChief
             var go = SessionFlags.StartGo;
             var green = SessionFlags.Green;
             var yellow = SessionFlags.Caution;
+            var wavingyellow = SessionFlags.CautionWaving;
 
             bool isGreen = !prevFlags.Contains(go) && curFlags.Contains(go) 
                 || !prevFlags.Contains(green) && curFlags.Contains(green);
@@ -404,6 +406,14 @@ namespace CrewChief
             if (!prevFlags.Contains(yellow) && curFlags.Contains(yellow))
             {
                 var e = new YellowFlagRaceEvent();
+                e.SessionTime = _telemetry.SessionTime.Value;
+                e.Lap = Leader == null ? 0 : Leader.Live.Lap;
+                this.OnRaceEvent(e);
+            }
+
+            if (!prevFlags.Contains(wavingyellow) && curFlags.Contains(wavingyellow))
+            {
+                var e = new WavingYellowFlagRaceEvent();
                 e.SessionTime = _telemetry.SessionTime.Value;
                 e.Lap = Leader == null ? 0 : Leader.Live.Lap;
                 this.OnRaceEvent(e);
@@ -474,6 +484,8 @@ namespace CrewChief
 
             // Get previous state
             var sessionWasFinished = this.SessionData.IsFinished;
+
+            //Debug.WriteLine("*** Sim:SdkOnTelemetryUpdated:SessionData.Flags: ", SessionData.Flags, "\n");
             var prevFlags = this.SessionData.Flags;
 
             // Update session state

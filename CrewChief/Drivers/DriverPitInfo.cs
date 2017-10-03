@@ -40,6 +40,9 @@ namespace CrewChief.Drivers
         public int LastPitLap { get; set; }
         public int CurrentStint { get; set; }
 
+        public double DriverPitTrkPct { get; set; }
+        public double DriverPitTrkMeters { get; set; }
+
         public void CalculatePitInfo(double time)
         {
             // If we are not in the world (blinking?), stop checking

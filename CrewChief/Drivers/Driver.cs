@@ -114,6 +114,8 @@ namespace CrewChief.Drivers
             this.Car.CarShortName = query["CarScreenNameShort"].GetValue();
             this.Car.CarPath = query["CarPath"].GetValue();
 
+            this.PitInfo.DriverPitTrkPct = Convert.ToDouble(query["DriverPitTrkPct"].GetValue());
+
             this.IsPacecar = this.CustId == -1 || this.Car.CarName == PACECAR_NAME;
         }
 

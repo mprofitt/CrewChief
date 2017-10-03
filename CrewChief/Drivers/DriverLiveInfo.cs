@@ -47,10 +47,14 @@ namespace CrewChief.Drivers
         public int CurrentSector { get; set; }
         public int CurrentFakeSector { get; set; }
 
+
+
+
         public void ParseTelemetry(TelemetryInfo e)
         {
             this.Lap = e.CarIdxLap.Value[this.Driver.Id];
             this.LapDistance = e.CarIdxLapDistPct.Value[this.Driver.Id];
+
             this.TrackSurface = e.CarIdxTrackSurface.Value[this.Driver.Id];
 
             this.Gear = e.CarIdxGear.Value[this.Driver.Id];
@@ -59,6 +63,41 @@ namespace CrewChief.Drivers
 
             this.Driver.PitInfo.CalculatePitInfo(e.SessionTime.Value);
         }
+
+        public void CalculatePitStallProximity(TelemetryInfo current, double? trackLengthM)
+        {
+            // Build calculation here then set off event when proximity occurs
+            if (current == null) return;
+            if (trackLengthM == null) return;
+            if (_driver.Live.TrackSurface == TrackSurfaces.AproachingPits)
+            {
+                // Pit stall after start/finish
+                if (_driver.PitInfo.DriverPitTrkPct > 0 && _driver.PitInfo.DriverPitTrkPct <.25)
+                {
+                    var position = _driver.PitInfo.DriverPitTrkPct * trackLengthM + trackLengthM; 
+                    var driverPosition = Convert.ToDouble(current.CarIdxLapDistPct.Value[this.Driver.Id] * trackLengthM + trackLengthM);
+
+
+                }
+                // Pit stall before start/finish
+                if (_driver.PitInfo.DriverPitTrkPct > .75 && _driver.PitInfo.DriverPitTrkPct <= 0)
+                {
+
+                }
+                // Pit stall on back stretch
+                if (_driver.PitInfo.DriverPitTrkPct > .25 && _driver.PitInfo.DriverPitTrkPct < .75)
+                {
+
+                }
+
+
+
+            }
+            else return;
+
+        }
+
+
 
         private double _prevSpeedUpdateTime;
         private double _prevSpeedUpdateDist;

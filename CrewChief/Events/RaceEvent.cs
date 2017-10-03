@@ -49,12 +49,12 @@ namespace CrewChief.Events
             DriverSwap = 7,
             PitEntry = 8,
             PitExit = 9,
-            PitStallEnter = 10
+            PitStallEnter = 10,
+            WavingYellowFlag = 11
         }
 
         public virtual Driver Driver { get; set; }
-
-    }
+}
 
     /// <summary>
     /// Represents a generic event concerning a single driver.
@@ -70,7 +70,7 @@ namespace CrewChief.Events
     public abstract class DriverSetRaceEvent : RaceEvent
     {
         public Driver Driver1 { get; set; }
-        public Driver Driver2 { get; set; }
+        public  Driver Driver2 { get; set; }
 
         public override EventTypes Type { get { return EventTypes.DriverSwap;} }
     }
@@ -83,6 +83,11 @@ namespace CrewChief.Events
     public class YellowFlagRaceEvent : RaceEvent
     {
         public override EventTypes Type { get { return EventTypes.YellowFlag; } }
+    }
+
+    public class WavingYellowFlagRaceEvent : RaceEvent
+    {
+        public override EventTypes Type { get { return EventTypes.WavingYellowFlag; } }
     }
 
     public class WinnerRaceEvent : DriverRaceEvent

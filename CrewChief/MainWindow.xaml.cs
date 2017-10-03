@@ -194,6 +194,10 @@ namespace CrewChief
             }
             if (!isOnTrack) status.Flag = 0;
 
+
+
+
+
             this.UpdateCarTelemetry(e.TelemetryInfo);
             this.UpdateDriversTelemetry(e.TelemetryInfo);
         }
@@ -206,6 +210,8 @@ namespace CrewChief
                 synthesizerSpeak();
             }
             if (e.Event.Type == RaceEvent.EventTypes.YellowFlag)
+            { }
+            if (e.Event.Type == RaceEvent.EventTypes.WavingYellowFlag)
             {
                 EnqueueSpeech("yellow flag is out, pace speed");
                 synthesizerSpeak();

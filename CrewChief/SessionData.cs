@@ -5,6 +5,7 @@ using iRacingSdkWrapper.Bitfields;
 using CrewChief;
 using CrewChief.Drivers;
 using System;
+using System.Diagnostics;
 
 namespace CrewChief
 {
@@ -84,6 +85,10 @@ namespace CrewChief
             this.SessionTime = telemetry.SessionTime.Value;
             this.TimeRemaining = telemetry.SessionTimeRemain.Value;
             this.Flags = telemetry.SessionFlags.Value;
+
+            //Debug.WriteLine("***");
+            //Debug.WriteLine("SessionData:Update:Flags: {0}", this.Flags);
+            //Debug.WriteLine("***\n");
         }
 
         public void UpdateState(SessionStates state)

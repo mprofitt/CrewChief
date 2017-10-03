@@ -25,6 +25,21 @@ namespace CrewChief
             return 0;
         }
 
+        public static double ParseTrackLengthMeters(string value)
+        {
+            // value = "6.93 km"
+            double length = 0;
+
+            int indexOfKm = value.IndexOf("km");
+            if (indexOfKm > 0) value = value.Substring(0, indexOfKm);
+
+            if (double.TryParse(value, NumberStyles.AllowDecimalPoint | NumberStyles.AllowTrailingWhite, CultureInfo.InvariantCulture, out length))
+            {
+                return length * 1000;
+            }
+            return 0;
+        }
+
         public static int ParseInt(string value, int @default = 0)
         {
             int val;

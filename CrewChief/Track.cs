@@ -17,12 +17,15 @@ namespace CrewChief
         public string Name { get; set; }
         public string CodeName { get; set; }
         public double Length { get; set; }
+        public double LengthMeters { get; set; }
         public bool NightMode { get; set; }
 
         public List<Sector> Sectors
         {
             get { return _sectors; }
         }
+
+
 
         public static Track FromSessionInfo(SessionInfo info)
         {
@@ -34,6 +37,7 @@ namespace CrewChief
             track.CodeName = query["TrackName"].GetValue();
             track.Length = Parser.ParseTrackLength(query["TrackLength"].GetValue());
             track.NightMode = query["WeekendOptions"]["NightMode"].GetValue() == "1";
+            track.LengthMeters = Parser.ParseTrackLengthMeters(query["TrackLength"].GetValue());
 
             // Parse sectors
             track.Sectors.Clear();
