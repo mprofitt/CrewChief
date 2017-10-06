@@ -47,6 +47,7 @@ namespace CrewChief
 
         private bool isUpdatingDrivers = true;
         private int MyID;
+        private bool _PitStallCountDownActive = false;
 
         private Status status;
 
@@ -192,9 +193,11 @@ namespace CrewChief
             {
                 status.Flag |= Status.Flags.Ready;
             }
-            if (!isOnTrack) status.Flag = 0;
-
-
+            if (!isOnTrack)
+            {
+                status.Flag = 0;
+                _PitStallCountDownActive = false;
+            }
 
 
 
@@ -221,6 +224,7 @@ namespace CrewChief
                 Debug.WriteLine("*** RaceEvent.EventType.PitEntry ***");
                 Debug.WriteLine("\te.Event.Driver.Id = {0}", e.Event.Driver.Id);
                 Debug.WriteLine("\te.Event.Driver.Name = " + Convert.ToString(e.Event.Driver.Name) + "\n");
+                Debug.WriteLine("\tMyID = " + MyID + "\n");
 
                 if (MyID == e.Event.Driver.Id)
                 {
@@ -275,10 +279,26 @@ namespace CrewChief
             if (e.Event.Type == RaceEvent.EventTypes.PitExit)
             {
                 Car.ClearPitStop();
+                _PitStallCountDownActive = false;
             }
 
             if (e.Event.Type == RaceEvent.EventTypes.Winner)
             { }
+
+            if (e.Event.Type == RaceEvent.EventTypes.PitStallCountDown)
+            {
+
+                Debug.WriteLine("MyID: " + MyID);
+                Debug.WriteLine("e.Event.Driver.Id: " + e.Event.Driver.Id + "\n");
+
+                if ((MyID == e.Event.Driver.Id) && (!_PitStallCountDownActive))
+                {
+                    Debug.WriteLine("RaceEvent.EventTypes.PitStallCountDown\n");
+                    _PitStallCountDownActive = true;
+                    EnqueueSpeech("pit stall in 3, 2, 1, now");
+                    synthesizerSpeak();
+                }
+            }
         }
 
         private void UpdateCarTelemetry(TelemetryInfo info)

@@ -50,7 +50,8 @@ namespace CrewChief.Events
             PitEntry = 8,
             PitExit = 9,
             PitStallEnter = 10,
-            WavingYellowFlag = 11
+            WavingYellowFlag = 11,
+            PitStallCountDown = 12
         }
 
         public virtual Driver Driver { get; set; }
@@ -131,5 +132,10 @@ namespace CrewChief.Events
     public class PitExitRaceEvent : DriverRaceEvent
     {
         public override EventTypes Type { get { return EventTypes.PitExit; } }
+    }
+
+    public class PitStallCountDownRaceEvent : DriverRaceEvent
+    {
+        public override EventTypes Type { get { return EventTypes.PitStallCountDown; } }
     }
 }

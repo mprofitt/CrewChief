@@ -25,6 +25,10 @@ namespace CrewChief
         private bool _mustUpdateSessionData, _mustReloadDrivers;
         private TimeDelta _timeDelta;
 
+        // Seconds before pit stall to begin count down
+        private const double COUNT_START = 20;
+
+
         private Sim()
         {
             _sdk = new SdkWrapper();
@@ -108,6 +112,7 @@ namespace CrewChief
             this.GetDrivers(info);
             _isUpdatingDrivers = false;
 
+            
             this.GetResults(info);
         }
 
@@ -268,22 +273,64 @@ namespace CrewChief
             _mustReloadDrivers = true;
         }
 
-        private void UpdateDriverTelemetry(TelemetryInfo info)
+        private void UpdateDriverTelemetry(TelemetryInfo telemetryInfo)
         {
             // If currently updating list, no need to update telemetry info 
             if (_isUpdatingDrivers) return;
 
-            if (_driver != null) _driver.UpdatePrivateInfo(info);
+            if (_driver != null) _driver.UpdatePrivateInfo(telemetryInfo);
             foreach (var driver in _drivers)
             {
-                driver.Live.CalculateSpeed(info, _sessionData.Track.Length);
-                driver.Live.CalculatePitStallProximity(info, _sessionData.Track.LengthMeters);
-                driver.UpdateLiveInfo(info);
-                driver.UpdateSectorTimes(_sessionData.Track, info);
+                driver.UpdateLiveInfo(telemetryInfo);
+                driver.Private.ParseTelemetry(telemetryInfo);
+                driver.UpdateSectorTimes(_sessionData.Track, telemetryInfo);
+                driver.Live.CalculateSpeed(telemetryInfo, _sessionData.Track.Length);
+
+                if (driver.IsCurrentDriver)
+                {
+                    driver.UpdatePrivateInfo(telemetryInfo);
+                    this.CalculatePitStallProximity(telemetryInfo, _sessionData.Track.LengthMeters);
+                }
             }
-            
             this.CalculateLivePositions();
             this.UpdateTimeDelta();
+        }
+
+        public void CalculatePitStallProximity(TelemetryInfo current, double? trackLengthM)
+        {
+            // Build calculation here then set off event when proximity occurs
+            if (current == null) return;
+            if (trackLengthM == null) return;
+            if (_driver.Live.TrackSurface != TrackSurfaces.AproachingPits) return;
+
+            double carLapDistance = Convert.ToDouble(current.CarIdxLapDistPct.Value[this.Driver.Id]);
+            double pitLapDistanceMeters = _driver.Private.DriverPitTrkPct * (double)trackLengthM;
+            double carLapDistanceMeters = carLapDistance * (double)trackLengthM;
+            double speedMetersPerSecond = _driver.Live.Speed * 0.27777777777778;
+            double pitStallCountDown;
+
+            if (carLapDistanceMeters < pitLapDistanceMeters)
+            {
+                pitStallCountDown = pitLapDistanceMeters - carLapDistanceMeters;
+            }
+            else pitStallCountDown = pitLapDistanceMeters + (double)trackLengthM - carLapDistanceMeters;
+
+            Debug.WriteLine("CalculatePitStallProximity");
+            Debug.WriteLine("_driver.Id: " + _driver.Id);
+            Debug.WriteLine("carLapDistanceMeters: " + carLapDistanceMeters);
+            Debug.WriteLine("pitLapDistanceMeters: " + pitLapDistanceMeters);
+            Debug.WriteLine("_driver.Live.Speed: " + _driver.Live.Speed);
+            Debug.WriteLine("pitStallCountDown: " + pitStallCountDown + "\n");
+
+            if (pitStallCountDown < speedMetersPerSecond * COUNT_START)
+            {
+                var e = new PitStallCountDownRaceEvent();
+                e.Driver = _driver;
+                e.SessionTime = _telemetry.SessionTime.Value;
+                e.Lap = _driver.Live.Lap;
+                this.OnRaceEvent(e);
+                Debug.WriteLine("PitStallCountDownRaceEvent\n");
+            }
         }
 
         private void CalculateLivePositions()

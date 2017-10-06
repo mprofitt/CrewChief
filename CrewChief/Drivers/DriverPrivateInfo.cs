@@ -25,10 +25,10 @@ namespace CrewChief.Drivers
         public float Throttle { get; private set; }
         public float Brake { get; private set; }
         public float Clutch { get; private set; }
-
         public float Fuel { get; private set; }
         public float FuelPercentage { get; private set; }
         public float FuelPressure { get; private set; }
+        public double DriverPitTrkPct { get; private set; }
 
         public void ParseTelemetry(TelemetryInfo e)
         {
@@ -41,6 +41,16 @@ namespace CrewChief.Drivers
             this.FuelPressure = e.FuelPress.Value;
 
             // TODO: add remaining parameters
+        }
+
+        public void ParseSessionInfo(SessionInfo sessionInfo)
+        {
+            this.DriverPitTrkPct = Parser.ParseFloat(sessionInfo["DriverInfo"]["DriverPitTrkPct"].GetValue());
+        }
+
+        private void ParseTelemetery(TelemetryInfo telemetryInfo)
+        {
+
         }
     }
 }

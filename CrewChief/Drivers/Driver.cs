@@ -114,7 +114,9 @@ namespace CrewChief.Drivers
             this.Car.CarShortName = query["CarScreenNameShort"].GetValue();
             this.Car.CarPath = query["CarPath"].GetValue();
 
-            this.PitInfo.DriverPitTrkPct = Convert.ToDouble(query["DriverPitTrkPct"].GetValue());
+            Debug.WriteLine("ParseStaticSessionInfo Static Information");
+            Debug.WriteLine("Car.CarId: " + this.Car.CarId);
+            Debug.WriteLine("Car.CarName: " + this.Car.CarName + "\n");
 
             this.IsPacecar = this.CustId == -1 || this.Car.CarName == PACECAR_NAME;
         }
@@ -135,6 +137,10 @@ namespace CrewChief.Drivers
             driver.ParseStaticSessionInfo(info);
             driver.ParseDynamicSessionInfo(info);
 
+            if (driver.Id == Parser.ParseInt(info["DriverInfo"]["DriverCarIdx"].GetValue()))
+            {
+                driver.Private.ParseSessionInfo(info);
+            }
             return driver;
         }
 
